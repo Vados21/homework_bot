@@ -1,18 +1,15 @@
 import logging
 import os
-from telegram import Bot
-from telegram.ext import Updater, Filters, MessageHandler
 import time
-import telegram
 
-from dotenv import load_dotenv
 import requests
+import telegram
+from dotenv import load_dotenv
 
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-current_timestamp = 147241610
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -34,6 +31,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
+    """"Отправка сообщений"""
     bot.send_message(TELEGRAM_CHAT_ID, message)
     logging.info('Сообщение отправлено')
 
@@ -57,33 +55,35 @@ def get_api_answer(current_timestamp):
     try:
         return homework_statuses.json()
     except ValueError:
-        logging.error('Недокументированный статус домашней работы')
+        logging.error('Ошибка ответа json')
         raise ValueError('Ошибка ответа json')
 
 
 def check_response(response):
+    """"Проверка доступности переменных окружения"""
     if not response['homeworks']:
-        error = f'отсутствует ключ homeworks в ответе: {response}'
+        logging.error(f'отсутствует ключ homeworks в ответе: {response}')
     homework = response.get('homeworks')
     logging.info(type(homework))
     if homework is None or not isinstance(homework, list):
         logging.error('Полученный ответ не соответствует ожидаемому')
         raise ValueError('В ответе нет списка homeworks')
-    logging.info('Status of homework update')
     if not isinstance(homework, dict):
-        error = f'List {homework[0]} is empty'
+        logging.error(f'List {homework[0]} is empty')
     logging.info(homework)
     return homework
 
 
 def parse_status(homework):
+    """"Извлекает из информации о конкретной домашней работе статус."""
     homework_name = homework['homework_name']
     logging.info(homework['homework_name'])
     homework_status = homework['status']
     logging.info(homework_name)
     if not isinstance(homework, dict):
-       message = 'Ошибка типа словаря'
-       raise TypeError('В ответе нет списка homeworks')
+        message = ('Ошибка типа словаря')
+        logging.error('Ошибка типа словаря')
+        raise TypeError('В ответе нет списка homeworks')
     if homework_status not in HOMEWORK_STATUSES:
         message = f'Недокументированный статус: {homework_status}'
         raise KeyError(message)
