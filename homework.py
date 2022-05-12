@@ -31,7 +31,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    """"Отправка сообщений"""
+    """Отправка сообщений"""
     bot.send_message(TELEGRAM_CHAT_ID, message)
     logging.info('Сообщение отправлено')
 
@@ -60,7 +60,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """"Проверка доступности переменных окружения"""
+    """Проверка доступности переменных окружения"""
     if not response['homeworks']:
         logging.error(f'отсутствует ключ homeworks в ответе: {response}')
     homework = response.get('homeworks')
@@ -75,7 +75,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """"Извлекает из информации о конкретной домашней работе статус."""
+    """Извлекает из информации о конкретной домашней работе статус."""
     homework_name = homework['homework_name']
     logging.info(homework['homework_name'])
     homework_status = homework['status']
@@ -92,7 +92,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """"Проверяем токены"""
+    """Проверяем токены"""
     if TELEGRAM_TOKEN or PRACTICUM_TOKEN or TELEGRAM_CHAT_ID is not None:
         return True
     else:
@@ -102,7 +102,6 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time() - 50 * 24 * 60 * 60)
     check_tokens()
