@@ -21,7 +21,7 @@ logging.basicConfig(
     format='%(lineno)s, %(asctime)s, %(levelname)s, %(message)s, %(name)s'
 )
 
-RETRY_TIME = 6
+RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
@@ -35,6 +35,7 @@ HOMEWORK_STATUSES = {
 
 def send_message(bot, message):
     bot.send_message(TELEGRAM_CHAT_ID, message)
+    logging.info('Сообщение отправлено')
 
 
 def get_api_answer(current_timestamp):
@@ -54,10 +55,9 @@ def get_api_answer(current_timestamp):
         logging.error(f'Ошибка {status_code}')
         raise telegram.TelegramError(f'Ошибка {status_code}')
     try:
-        logging.info(type(homework_statuses.json()))
         return homework_statuses.json()
     except ValueError:
-        logging.error('Ошибка ответа json')
+        logging.error('Недокументированный статус домашней работы')
         raise ValueError('Ошибка ответа json')
 
 
@@ -65,7 +65,6 @@ def check_response(response):
     if not response['homeworks']:
         error = f'отсутствует ключ homeworks в ответе: {response}'
     homework = response.get('homeworks')
-    #homework = homework.json()
     logging.info(type(homework))
     if homework is None or not isinstance(homework, list):
         logging.error('Полученный ответ не соответствует ожидаемому')
@@ -97,6 +96,7 @@ def check_tokens():
     if TELEGRAM_TOKEN or PRACTICUM_TOKEN or TELEGRAM_CHAT_ID is not None:
         return True
     else:
+        logging.critical('Token error')
         return False
 
 
@@ -104,32 +104,19 @@ def main():
     """Основная логика работы бота."""
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    #current_timestamp = 147241610
     current_timestamp = int(time.time() - 50 * 24 * 60 * 60)
     check_tokens()
-    status = ''
-
     while True:
         try:
             response = get_api_answer(current_timestamp)
-            logging.info(type(response))
-        except Exception as error:
-            message = f'Сбой в работе программы: {error}'
-            time.sleep(RETRY_TIME)
-        try:
-            if check_response(response):
-                homework = check_response(response)
+            if len(response) != 0:
+                homework = check_response(response)[0]
                 message = parse_status(homework)
-                print('work well')
-                if message != status:
-                    send_message(bot, message)
-                    status = message
-        #except Exception as error:
-        #    message = f'Сбой в работе программы2: {error}'
-        #    if message != status:
-        #        send_message(bot, message)
-        #        status = message
-        #        print(status)
+                send_message(bot, message)
+                current_timestamp = response.get('current_date')
+        except Exception as error:
+            logging.error('Бот не смог отправить сообщение')
+            message = f'Сбой в работе программы: {error}'
         finally:
             time.sleep(RETRY_TIME)
 
