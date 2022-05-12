@@ -31,7 +31,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    """Отправка сообщений"""
+    """Отправка сообщений."""
     bot.send_message(TELEGRAM_CHAT_ID, message)
     logging.info('Сообщение отправлено')
 
@@ -60,7 +60,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """Проверка доступности переменных окружения"""
+    """Проверка доступности переменных окружения."""
     if not response['homeworks']:
         logging.error(f'отсутствует ключ homeworks в ответе: {response}')
     homework = response.get('homeworks')
@@ -92,7 +92,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Проверяем токены"""
+    """Проверяем токены."""
     if TELEGRAM_TOKEN or PRACTICUM_TOKEN or TELEGRAM_CHAT_ID is not None:
         return True
     else:
