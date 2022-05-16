@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 import time
 from http import HTTPStatus
 
@@ -25,7 +24,7 @@ logging.basicConfig(
 
 
 class SendMessageFailure(Exception):
-    logging.error('Бот не смог отправить сообщение')
+    pass
 
 
 def send_message(bot, message):
@@ -74,6 +73,7 @@ def check_response(response):
         raise TypeError('Тип response не соответствует списку')
     if homework is None:
         logging.error('Словарь homework пустой')
+    logging.info(homework)
     return homework
 
 
@@ -107,6 +107,7 @@ def main():
         while True:
             try:
                 response = get_api_answer(current_timestamp)
+                logging.info(response)
                 if len(response) != 0:
                     homework = check_response(response)[0]
                     message = parse_status(homework)
