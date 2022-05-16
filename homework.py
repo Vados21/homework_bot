@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from settings import (ENDPOINT, HEADERS, HOMEWORK_STATUSES, RETRY_TIME,
                       TIME_DELTA)
 
+
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -21,12 +22,6 @@ logging.basicConfig(
     filename='main.log',
     format='%(lineno)s, %(asctime)s, %(levelname)s, %(message)s'
 )
-
-
-class SendMessageFailure(Exception):
-    """Ловит исключение."""
-
-    pass
 
 
 def send_message(bot, message):
@@ -67,10 +62,7 @@ def check_response(response):
         raise TypeError('Тип response не соответствует словарю')
     if 'homeworks' not in response:
         logging.error('Ключ homeworks отсутствоет в response')
-    try:
-        homework = response.get('homeworks')
-    except Exception as error:
-        logging.error(error)
+    homework = response.get('homeworks')
     if type(homework) != list:
         raise TypeError('Тип response не соответствует списку')
     if homework is None:
@@ -81,14 +73,16 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлекает из информации о конкретной домашней работе статус."""
-    homework_name = homework.get('homework_name')
-    logging.info(homework_name)
-    homework_status = homework.get('status')
-    logging.info(homework_status)
     if not isinstance(homework, dict):
         message = ('Ошибка типа словаря')
         logging.error('Ошибка типа словаря')
         raise TypeError('В ответе нет списка homeworks')
+    homework_name = homework.get('homework_name')
+    if homework_name is None:
+        logging.error('Отсутствует homework_name')
+    logging.info(homework_name)
+    homework_status = homework.get('status')
+    logging.info(homework_status)
     if homework_status not in HOMEWORK_STATUSES:
         message = f'Недокументированный статус: {homework_status}'
         raise KeyError(message)
@@ -103,7 +97,7 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    if check_tokens() is True:
+    if check_tokens():
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
         current_timestamp = int(time.time() - TIME_DELTA)
         while True:
