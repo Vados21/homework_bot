@@ -1,7 +1,6 @@
 import logging
 import os
 import time
-from asyncio import exceptions
 from http import HTTPStatus
 
 import requests
