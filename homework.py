@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import time
 from http import HTTPStatus
 
@@ -23,12 +24,16 @@ logging.basicConfig(
 )
 
 
+class SendMessageFailure(Exception):
+    logging.error('Бот не смог отправить сообщение')
+
+
 def send_message(bot, message):
     """Отправка сообщений."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info('Сообщение отправлено')
-    except exceptions.SendMessageFailure:
+    except Exception.SendMessageFailure:
         logging.error('Бот не смог отправить сообщение')
 
 
